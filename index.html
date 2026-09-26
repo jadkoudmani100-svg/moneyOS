@@ -12,6 +12,9 @@
 </head>
 <body class="theme-dark">
 
+  <!-- ==================== كانفاس الخطوط والأمواج المتحركة ==================== -->
+  <canvas id="ambientLinesCanvas" class="ambient-lines-canvas"></canvas>
+
   <!-- ==================== شاشة البداية المتحركة ==================== -->
   <div id="splashScreen" class="splash-screen">
     <div class="splash-logo-box">
@@ -20,31 +23,43 @@
     </div>
   </div>
 
-  <!-- ==================== شاشة القفل الرئيسية ==================== -->
+  <!-- ==================== شاشة القفل الرئيسية المتطورة ==================== -->
   <div id="lockScreen" class="lock-screen hidden">
     <div class="lock-backdrop"></div>
     <div class="lock-content">
-      <div class="lock-logo-badge">
-        <div class="mini-logo-m">M</div>
+      
+      <!-- شعار القفل وأيقونة التحقق المتحركة -->
+      <div class="lock-header-area">
+        <div class="lock-logo-badge" id="lockLogoBadge">
+          <div class="mini-logo-m" id="lockLogoLetter">M</div>
+          <svg class="lock-success-svg hidden" id="lockSuccessSvg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+        <h1 class="lock-title" id="lockTitle">Money OS مشفر</h1>
+        <p id="lockSubtitle" class="lock-subtitle">أدخل رمز PIN لفك تشفير الخزينة</p>
       </div>
 
-      <h1 class="lock-title">Money OS مشفر</h1>
-      <p id="lockSubtitle" class="lock-subtitle">أدخل رمز PIN لفك تشفير المحافظ</p>
-
-      <!-- مؤشرات الرمز -->
+      <!-- مؤشرات الرمز المتحركة -->
       <div class="pin-dots" id="pinDots">
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+        <div class="dot-wrap"><span class="dot"></span></div>
+        <div class="dot-wrap"><span class="dot"></span></div>
+        <div class="dot-wrap"><span class="dot"></span></div>
+        <div class="dot-wrap"><span class="dot"></span></div>
       </div>
 
-      <!-- تنبيه المحاولات -->
+      <!-- حالة التحقق والتنبيهات -->
+      <div id="lockStatusBox" class="lock-status-box">
+        <span id="lockStatusText"></span>
+      </div>
+
+      <!-- تنبيه نفاذ المحاولات -->
       <div id="lockAttemptsBox" class="attempts-banner hidden">
         <span id="lockAttemptsText"></span>
       </div>
 
-      <!-- لوحة الأرقام LTR 1 2 3 -->
+      <!-- لوحة الأرقام الحديثة LTR 1 2 3 -->
       <div class="numpad-wrapper">
         <div class="numpad" id="numpadGrid">
           <button type="button" class="num-btn" data-val="1"><span>1</span></button>
@@ -56,477 +71,612 @@
           <button type="button" class="num-btn" data-val="7"><span>7</span></button>
           <button type="button" class="num-btn" data-val="8"><span>8</span></button>
           <button type="button" class="num-btn" data-val="9"><span>9</span></button>
-          <button type="button" class="num-btn special-btn" id="bioAuthBtn" aria-label="بصمة">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 11c0 2.5-1 4.5-3 5.5"></path>
-              <path d="M15 13c-.5 2.5-2 4.5-4 5.5"></path>
-              <path d="M8 8a5 5 0 0 1 8 0v2"></path>
-              <path d="M5 12a8 8 0 0 1 14 0"></path>
+          <button type="button" class="num-btn action-btn" id="pinBiometricBtn" title="بصمة">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a10 10 0 0 0-10 10c0 3 1.5 5.5 3.5 7.5l1.4-1.4C5.3 16.5 4 14.5 4 12a8 8 0 1 1 16 0c0 2.5-1.3 4.5-2.9 6.1l1.4 1.4C20.5 17.5 22 15 22 12A10 10 0 0 0 12 2z"/>
+              <path d="M12 6a6 6 0 0 0-6 6c0 1.8 1 3.4 2.2 4.4l1.4-1.4C8.8 14.3 8 13.2 8 12a4 4 0 1 1 8 0c0 1.2-.8 2.3-1.6 3l1.4 1.4C17 15.4 18 13.8 18 12a6 6 0 0 0-6-6z"/>
             </svg>
           </button>
           <button type="button" class="num-btn" data-val="0"><span>0</span></button>
-          <button type="button" class="num-btn special-btn" id="deletePinBtn" aria-label="حذف">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-              <line x1="18" y1="9" x2="12" y2="15"></line>
-              <line x1="12" y1="9" x2="18" y2="15"></line>
+          <button type="button" class="num-btn action-btn delete-btn" id="pinDeleteBtn" title="حذف">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+              <line x1="18" y1="9" x2="12" y2="15"/>
+              <line x1="12" y1="9" x2="18" y2="15"/>
             </svg>
           </button>
         </div>
       </div>
 
-      <div class="lock-footer-links">
-        <button type="button" id="emergencyResetBtn" class="link-danger">نسيت الرمز؟ إعادة تعيين شاملة</button>
-      </div>
     </div>
   </div>
 
-  <!-- ==================== شريط الرأس ==================== -->
-  <header class="app-header">
-    <div class="header-content">
-      <div class="app-brand-lead">
-        <div class="app-header-logo">M</div>
-        <div class="brand-text">
-          <h2 class="app-title" id="headerTitle">Money OS</h2>
-          <span class="app-sec-tag">تشفير محلي AES-256</span>
+  <!-- ==================== التطبيق الرئيسي ==================== -->
+  <div class="app-layout" id="appLayout">
+    
+    <!-- الرأس العلوي -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-mark">M</div>
+        <div class="app-info">
+          <span class="app-name">Money OS</span>
+          <span class="vault-status-indicator" id="headerSecurityStatus">
+            <span class="status-dot"></span>
+            محلي مشفر
+          </span>
         </div>
       </div>
       <div class="header-actions">
-        <button id="togglePrivacyBtn" class="icon-chip" aria-label="إخفاء الرصيد">
-          <svg id="eyeOpenIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
+        <button class="icon-btn" id="privacyToggleBtn" title="إخفاء الأرقام">
+          <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
           </svg>
-          <svg id="eyeClosedIcon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-          </svg>
-        </button>
-        <button id="quickLockBtn" class="icon-chip lock-badge" aria-label="قفل ومسح الذاكرة">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          <svg class="eye-closed hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
           </svg>
         </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- ==================== المحتوى الأساسي ==================== -->
-  <main class="app-body">
-
-    <!-- شاشة 1: الرئيسية -->
-    <section id="viewHome" class="view-panel active">
-      <div class="net-worth-card">
-        <div class="card-glow"></div>
-        <div class="card-top">
-          <span class="label">إجمالي السيولة المقدرة</span>
-          <span class="currency-badge">USD</span>
-        </div>
-        <div class="card-value-box">
-          <span class="currency-symbol">$</span>
-          <h1 class="total-balance" id="netWorthValue">0.00</h1>
-        </div>
-
-        <div class="card-summary-grid">
-          <div class="summary-cell income">
-            <div class="icon-bubble">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-            </div>
-            <div class="text">
-              <span class="sub">المقبوضات</span>
-              <strong id="totalIncomeValue">$0.00</strong>
-            </div>
-          </div>
-          <div class="summary-cell expense">
-            <div class="icon-bubble">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
-            </div>
-            <div class="text">
-              <span class="sub">المدفوعات</span>
-              <strong id="totalExpenseValue">$0.00</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- الإجراءات السريعة -->
-      <div class="quick-actions-row">
-        <button class="action-tile deposit-tile" id="openDepositModalBtn">
-          <div class="tile-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </div>
-          <span>إيداع</span>
-        </button>
-        <button class="action-tile expense-tile" id="openExpenseModalBtn">
-          <div class="tile-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </div>
-          <span>سحب</span>
-        </button>
-        <button class="action-tile transfer-tile" id="openTransferModalBtn">
-          <div class="tile-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-          </div>
-          <span>تحويل</span>
+        <button class="icon-btn lock-now-btn" id="manualLockBtn" title="قفل الخزينة">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
         </button>
       </div>
+    </header>
 
-      <!-- قسم المحافظ -->
-      <div class="section-container">
-        <div class="section-bar">
-          <h3 class="section-title">المحافظ النشطة</h3>
-          <button class="btn-text-accent" id="addNewWalletShortcut">+ إضافة محفظة</button>
-        </div>
-        <div id="homeWalletsScroll" class="horizontal-wallets-track"></div>
-      </div>
+    <!-- مساحة الشاشات -->
+    <main class="main-content">
 
-      <!-- آخر العمليات -->
-      <div class="section-container">
-        <div class="section-bar">
-          <h3 class="section-title">أحدث العمليات</h3>
-          <span class="badge-count" id="txCountBadge">0</span>
-        </div>
-        <div class="transactions-list" id="homeRecentTxList"></div>
-      </div>
-    </section>
-
-    <!-- شاشة 2: المحافظ والعمليات -->
-    <section id="viewWallets" class="view-panel">
-      <div class="section-container">
-        <div class="section-bar">
-          <h3 class="section-title">جميع المحافظ</h3>
-          <button class="btn-primary-sm" id="createNewWalletBtn">+ محفظة جديدة</button>
-        </div>
-        <div class="wallets-grid-full" id="allWalletsGrid"></div>
-      </div>
-
-      <div class="section-container mt-6">
-        <div class="section-bar">
-          <h3 class="section-title">سجل العمليات الكامل</h3>
-        </div>
-
-        <div class="search-filter-card">
-          <div class="search-input-box">
-            <svg class="search-svg-fixed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="txSearchInput" placeholder="ابحث في العمليات أو التصنيفات...">
+      <!-- 1. الشاشة الرئيسية: Dashboard -->
+      <section id="screen-home" class="screen-view active">
+        <!-- بطاقة الثروة الإجمالية -->
+        <div class="hero-card">
+          <div class="hero-top">
+            <span class="hero-label">إجمالي السيولة المالية</span>
+            <span class="currency-tag" id="baseCurrencyTag">USD</span>
           </div>
-          <div class="filter-pills-row">
-            <button class="pill active" data-filter="all">الكل</button>
-            <button class="pill" data-filter="income">مقبوضات</button>
-            <button class="pill" data-filter="expense">مدفوعات</button>
-            <button class="pill" data-filter="transfer">تحويلات</button>
+          <div class="hero-amount-box">
+            <h1 class="hero-amount" id="totalWealthDisplay">0.00</h1>
+          </div>
+          <div class="hero-footer">
+            <div class="wealth-pill income-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              <span>وارد: </span>
+              <strong id="monthlyIncomeDisplay">0.00</strong>
+            </div>
+            <div class="wealth-pill expense-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+              <span>صادر: </span>
+              <strong id="monthlyExpenseDisplay">0.00</strong>
+            </div>
           </div>
         </div>
 
-        <div class="transactions-list mt-4" id="fullTxList"></div>
-      </div>
-    </section>
-
-    <!-- شاشة 3: التحليلات -->
-    <section id="viewAnalytics" class="view-panel">
-      <div class="section-container">
-        <h3 class="section-title mb-4">التوزيع المالي والمصروفات</h3>
-        <div class="chart-glass-card">
-          <canvas id="expenseChart" width="320" height="240"></canvas>
-          <div class="chart-legend" id="chartLegendBox"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- شاشة 4: الإعدادات والأمان -->
-    <section id="viewSettings" class="view-panel">
-      <div class="security-status-card" id="securityStatusCard">
-        <div class="status-icon-glow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        </div>
-        <div class="status-info">
-          <h4 id="secStatusTitle">تشفير عسكري مفعل</h4>
-          <p id="secStatusDesc">تشفير AES-256 محلي مع PBKDF2 لجميع البيانات.</p>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <span class="group-label">الأمان والقفل المحلي</span>
-
-        <div class="setting-row">
-          <div class="setting-meta">
-            <span class="setting-title">رمز الحماية (PIN)</span>
-            <span class="setting-subtitle" id="pinSettingSub">حماية الخزينة ومفاتيح التشفير</span>
-          </div>
-          <button class="btn-action-outline" id="managePinBtn">إعداد PIN</button>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-meta">
-            <span class="setting-title">القفل التلقائي عند مغادرة التطبيق</span>
-            <span class="setting-subtitle">مسح المفتاح من الذاكرة فوراً بمجرد تصغير الشاشة</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="autoLockToggle" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-meta">
-            <span class="setting-title">الاهتزاز اللمسي (Haptic Feedback)</span>
-            <span class="setting-subtitle">استجابة اهتزازية للأزرار والمفاتيح</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="hapticToggle" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-meta">
-            <span class="setting-title">المظهر الداكن (Dark Mode)</span>
-            <span class="setting-subtitle">مظهر زجاجي مريح للعين</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="themeToggle" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <span class="group-label">البيانات والنسخ الاحتياطي</span>
-        <div class="backup-action-grid">
-          <button class="backup-btn" id="exportEncryptedBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>تصدير نسخة JSON</span>
+        <!-- أزرار الإجراء السريع -->
+        <div class="quick-actions-bar">
+          <button class="action-tile" id="openDepositModalBtn">
+            <div class="action-icon income-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </div>
+            <span>إيداع</span>
           </button>
-          <label class="backup-btn" for="importFileInput">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <span>استيراد نسخة احتياطية</span>
-            <input type="file" id="importFileInput" accept=".json" class="hidden">
-          </label>
+          <button class="action-tile" id="openExpenseModalBtn">
+            <div class="action-icon expense-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </div>
+            <span>مصروف</span>
+          </button>
+          <button class="action-tile" id="openTransferModalBtn">
+            <div class="action-icon transfer-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </div>
+            <span>تحويل</span>
+          </button>
+          <button class="action-tile" id="quickAddWalletBtn">
+            <div class="action-icon wallet-bg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <span>محفظة</span>
+          </button>
         </div>
 
-        <button class="danger-outline-btn mt-4" id="wipeAllDataBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          <span>تصفير ومسح جميع البيانات المشفرة نهائياً</span>
+        <!-- شريط المحافظ المصغر الأفقي -->
+        <div class="section-container">
+          <div class="section-head">
+            <h3>المحافظ النشطة</h3>
+            <button class="link-btn" id="seeAllWalletsBtn">عرض الكل</button>
+          </div>
+          <div class="wallets-scroll-row" id="quickWalletsList"></div>
+        </div>
+
+        <!-- أحدث العمليات والبحث والتصفية -->
+        <div class="section-container">
+          <div class="section-head">
+            <h3>سجل المعاملات</h3>
+            <span class="badge-count" id="txCountBadge">0</span>
+          </div>
+
+          <!-- شريط البحث والفلترة -->
+          <div class="tx-filter-bar">
+            <div class="search-input-wrap">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="txSearchInput" placeholder="بحث بالملاحظة أو التصنيف...">
+            </div>
+            <div class="filter-pills">
+              <button class="filter-pill active" data-filter="all">الكل</button>
+              <button class="filter-pill" data-filter="income">وارد</button>
+              <button class="filter-pill" data-filter="expense">صادر</button>
+            </div>
+          </div>
+
+          <div class="transactions-list" id="homeTxList"></div>
+        </div>
+      </section>
+
+      <!-- 2. شاشة المحافظ التفصيلية: Wallets -->
+      <section id="screen-wallets" class="screen-view">
+        <div class="section-container">
+          <div class="section-head">
+            <h2>إدارة المحافظ</h2>
+            <button class="btn-primary-sm" id="addNewWalletScreenBtn">+ محفظة جديدة</button>
+          </div>
+          <div class="wallets-grid" id="fullWalletsGrid"></div>
+        </div>
+      </section>
+
+      <!-- 3. شاشة التحليلات والرسوم: Analytics -->
+      <section id="screen-analytics" class="screen-view">
+        <div class="section-container">
+          <h2>التحليلات المالية</h2>
+          
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h4>توزيع المصاريف حسب التصنيف</h4>
+            </div>
+            <div class="chart-canvas-box">
+              <canvas id="categoryChart" width="300" height="220"></canvas>
+            </div>
+            <div class="chart-legend" id="chartLegendBox"></div>
+          </div>
+
+          <div class="glass-card stat-summary-card">
+            <h4>إحصائيات سريعة</h4>
+            <div class="summary-metrics-grid">
+              <div class="metric-item">
+                <span class="m-label">إجمالي العمليات</span>
+                <span class="m-val" id="totalTxCountStat">0</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">أكبر عملية صرف</span>
+                <span class="m-val" id="maxExpenseStat">0.00</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">متوسط الصرف اليومي</span>
+                <span class="m-val" id="avgExpenseStat">0.00</span>
+              </div>
+              <div class="metric-item">
+                <span class="m-label">عدد المحافظ</span>
+                <span class="m-val" id="totalWalletsCountStat">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. شاشة الإعدادات والأمان: Settings -->
+      <section id="screen-settings" class="screen-view">
+        <div class="section-container">
+          <h2>إعدادات النظام والتجربة</h2>
+
+          <!-- تفضيلات الصوت والحركة الجديدة -->
+          <div class="settings-group">
+            <h4 class="group-title">التجربة الصوتية والبصرية</h4>
+
+            <div class="setting-item">
+              <div class="item-icon-box sound-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">المؤثرات الصوتية (Sound FX)</span>
+                <span class="item-sub">أصوات نقر وتفاعل حية للأزرار والعمليات</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="soundToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item">
+              <div class="item-icon-box anim-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l3 7 4-14 3 7h5"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">أمواج وخيوط الخلفية المتحركة</span>
+                <span class="item-sub">حركة ديناميكية مستمرة في الخلفية</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="motionToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item">
+              <div class="item-icon-box haptic-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">الاهتزاز اللمسي (Haptic)</span>
+                <span class="item-sub">اهتزاز تفاعلي خفيف عند اللمس</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="hapticToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item">
+              <div class="item-icon-box theme-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">الوضع الليلي (Dark Mode)</span>
+                <span class="item-sub">ألوان داكنة مريحة للعين</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="themeToggle" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- الأمان والتشفير -->
+          <div class="settings-group">
+            <h4 class="group-title">الأمان والتشفير</h4>
+            
+            <div class="setting-item" id="openPinModalBtn">
+              <div class="item-icon-box lock-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">رمز الحماية PIN</span>
+                <span class="item-sub" id="pinSettingSub">إعداد الرمز لتشفير الخزينة</span>
+              </div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+
+            <div class="setting-item">
+              <div class="item-icon-box timer-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">القفل التلقائي عند الخروج</span>
+                <span class="item-sub">قفل التطبيق فور تبديل الشاشات</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoLockToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- النسخ الاحتياطي والبيانات -->
+          <div class="settings-group">
+            <h4 class="group-title">النسخ الاحتياطي والبيانات</h4>
+
+            <div class="setting-item" id="exportBackupBtn">
+              <div class="item-icon-box export-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">تصدير نسخة احتياطية</span>
+                <span class="item-sub">تحميل ملف JSON كامل لبياناتك</span>
+              </div>
+            </div>
+
+            <div class="setting-item" id="importBackupTrigger">
+              <div class="item-icon-box import-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">استعادة نسخة احتياطية</span>
+                <span class="item-sub">استيراد ملف JSON محفوظ مسبقاً</span>
+              </div>
+              <input type="file" id="backupFileInput" accept=".json" class="hidden">
+            </div>
+
+            <div class="setting-item danger" id="wipeAllDataBtn">
+              <div class="item-icon-box danger-acc">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <div class="item-text">
+                <span class="item-main">مسح وتصفير الخزينة</span>
+                <span class="item-sub">حذف كل السجلات والمحافظ نهائياً</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- تنويه التشفير -->
+          <div class="security-card-box">
+            <div class="sec-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="sec-card-text">
+              <strong id="secStatusTitle">Money OS مؤمن</strong>
+              <p id="secStatusDesc">تشفير AES-GCM 256 مع PBKDF2 على جهازك محلياً 100%.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- الشريط السفلي العائم (Dock Bar) -->
+    <nav class="bottom-dock">
+      <div class="dock-inner">
+        <button class="dock-item active" data-target="screen-home" title="الرئيسية">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+        <button class="dock-item" data-target="screen-wallets" title="المحافظ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 10h20"/></svg>
+        </button>
+        <button class="dock-item" data-target="screen-analytics" title="التحليلات">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </button>
+        <button class="dock-item" data-target="screen-settings" title="الإعدادات">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
-    </section>
+    </nav>
 
-  </main>
-
-  <!-- ==================== الشريط السفلي ==================== -->
-  <nav class="bottom-dock">
-    <div class="dock-container">
-      <button class="dock-btn active" data-view="viewHome" aria-label="الرئيسية">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        <span class="dock-indicator"></span>
-      </button>
-      <button class="dock-btn" data-view="viewWallets" aria-label="المحافظ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M7 15h0M2 9.5h20"></path></svg>
-        <span class="dock-indicator"></span>
-      </button>
-      <button class="dock-btn" data-view="viewAnalytics" aria-label="التحليلات">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        <span class="dock-indicator"></span>
-      </button>
-      <button class="dock-btn" data-view="viewSettings" aria-label="الإعدادات">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        <span class="dock-indicator"></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- ==================== النوافذ المنبثقة ==================== -->
-
-  <!-- 1. نافذة إضافة عملية (إيداع / سحب) -->
-  <div id="txModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="txModalTitle">عملية جديدة</h3>
-        <button class="modal-close-btn" data-close="txModal">&times;</button>
-      </div>
-      <form id="txForm" class="modal-form">
-        <input type="hidden" id="txTypeField" value="expense">
-        <div class="form-group">
-          <label>المبلغ</label>
-          <input type="number" id="txAmountField" step="any" required placeholder="0.00" inputmode="decimal">
-        </div>
-        <div class="form-group">
-          <label>المحفظة</label>
-          <select id="txWalletField" required></select>
-        </div>
-        <div class="form-group">
-          <label>التصنيف</label>
-          <select id="txCategoryField">
-            <option value="راتب">راتب / دخل رئيسي</option>
-            <option value="تجارة">تجارة / أرباح</option>
-            <option value="طعام">طعام ومشتريات</option>
-            <option value="سكن">سكن وفواتير</option>
-            <option value="مواصلات">مواصلات ووقود</option>
-            <option value="صحة">صحة وأدوية</option>
-            <option value="ترفيه">ترفيه وسفر</option>
-            <option value="أخرى">أخرى / متنوع</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>ملاحظة (اختياري)</label>
-          <input type="text" id="txNoteField" placeholder="وصف للعملية...">
-        </div>
-        <button type="submit" id="txSubmitBtn" class="btn-primary-block">حفظ العملية المشفرة</button>
-      </form>
-    </div>
   </div>
 
-  <!-- 2. نافذة تحويل -->
-  <div id="transferModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>تحويل بين المحافظ</h3>
-        <button class="modal-close-btn" data-close="transferModal">&times;</button>
-      </div>
-      <form id="transferForm" class="modal-form">
-        <div class="form-group">
-          <label>من محفظة</label>
-          <select id="tfFromWalletField" required></select>
-        </div>
-        <div class="form-group">
-          <label>إلى محفظة</label>
-          <select id="tfToWalletField" required></select>
-        </div>
-        <div class="form-group">
-          <label>المبلغ</label>
-          <input type="number" id="tfAmountField" step="any" required placeholder="0.00" inputmode="decimal">
-        </div>
-        <button type="submit" id="transferSubmitBtn" class="btn-primary-block">إتمام التحويل</button>
-      </form>
-    </div>
-  </div>
+  <!-- ==================== النوافذ المنبثقة (Modals) ==================== -->
 
-  <!-- 3. نافذة إنشاء محفظة متطورة مع QR ورقم الحساب -->
-  <div id="walletModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <div class="modal-header">
+  <!-- 1. نافذة إنشاء محفظة جديدة -->
+  <div id="newWalletModal" class="modal-backdrop hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
         <h3>إنشاء محفظة جديدة</h3>
-        <button class="modal-close-btn" data-close="walletModal">&times;</button>
+        <button type="button" class="close-modal-btn">&times;</button>
       </div>
-      <form id="walletForm" class="modal-form">
-        <div class="form-group">
-          <label>اسم المحفظة</label>
-          <input type="text" id="walletNameField" required placeholder="مثال: حساب بنكي، كاش جيب، منصة بايننس...">
-        </div>
-        <div class="form-group">
-          <label>نوع المحفظة</label>
-          <select id="walletTypeField">
-            <option value="bank">حساب بنكي / كارت</option>
-            <option value="cash">كاش / نقدي</option>
-            <option value="crypto">عملات رقمية / كريبتو</option>
-            <option value="savings">صندوق ادخار</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>رقم الحساب / الآيبان (IBAN) / عنوان المحفظة</label>
-          <input type="text" id="walletAccountNoField" placeholder="مثال: TR00 1234... أو عنوان USDT (اختياري)">
-        </div>
-        <div class="form-group">
-          <label>العملة</label>
-          <select id="walletCurrencyField">
-            <option value="USD">دولار أمريكي (USD $)</option>
-            <option value="EUR">يورو (EUR €)</option>
-            <option value="SAR">ريال سعودي (SAR)</option>
-            <option value="SYP">ليرة سورية (SYP)</option>
-            <option value="GOLD">ذهب (Gold Gram)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>الرصيد الافتتاحي</label>
-          <input type="number" id="walletInitialBalanceField" step="any" value="0" placeholder="0.00">
+      <form id="newWalletForm" class="modal-form" novalidate>
+        
+        <div class="form-group" id="groupWalletName">
+          <label for="newWalletName">اسم المحفظة *</label>
+          <input type="text" id="newWalletName" placeholder="مثال: البنك الأهلي، كاش البيت..." autocomplete="off">
+          <small class="field-error-msg" id="errWalletName"></small>
         </div>
 
-        <!-- رفع صورة QR كود الحساب أو عنوان التحويل -->
+        <div class="form-row">
+          <div class="form-group" id="groupWalletType">
+            <label for="newWalletType">نوع الحساب</label>
+            <select id="newWalletType">
+              <option value="bank">حساب بنكي (Bank)</option>
+              <option value="cash">نقد / كاش (Cash)</option>
+              <option value="crypto">محفظة كريبتو (Crypto)</option>
+              <option value="saving">ادخار (Savings)</option>
+              <option value="other">أخرى</option>
+            </select>
+          </div>
+          <div class="form-group" id="groupWalletCurrency">
+            <label for="newWalletCurrency">العملة الأساسية *</label>
+            <select id="newWalletCurrency">
+              <option value="USD">دولار أمريكي (USD)</option>
+              <option value="EUR">يورو (EUR)</option>
+              <option value="SAR">ريال سعودي (SAR)</option>
+              <option value="AED">درهم إماراتي (AED)</option>
+              <option value="SYP">ليرة سورية (SYP)</option>
+              <option value="EGP">جنيه مصري (EGP)</option>
+              <option value="TRY">ليرة تركية (TRY)</option>
+              <option value="GOLD">ذهب (جرام)</option>
+            </select>
+            <small class="field-error-msg" id="errWalletCurrency"></small>
+          </div>
+        </div>
+
+        <div class="form-group" id="groupWalletBalance">
+          <label for="newWalletBalance">الرصيد الافتتاحي *</label>
+          <input type="number" step="any" id="newWalletBalance" value="0" placeholder="0.00" inputmode="decimal">
+          <small class="field-error-msg" id="errWalletBalance"></small>
+        </div>
+
+        <div class="form-group" id="groupWalletAccount">
+          <label for="newWalletAccount">رقم الحساب أو الـ IBAN <span class="opt-label">(اختياري)</span></label>
+          <input type="text" id="newWalletAccount" placeholder="SA0000000000000000000000 أو رقم الحساب" autocomplete="off" spellcheck="false">
+          <small class="field-hint" id="hintWalletAccount">إذا كان آيبان بنكي يتم فحصه تلقائياً وفق المعيار الدولي Mod-97.</small>
+          <small class="field-error-msg" id="errWalletAccount"></small>
+        </div>
+
+        <!-- رفع صورة QR كود التحويل -->
         <div class="form-group">
-          <label>صورة QR كود التحويل / الاستلام (اختياري)</label>
-          <div class="qr-upload-wrapper">
-            <input type="file" id="walletQrFileField" accept="image/*" class="qr-file-input">
-            <div id="qrPreviewBox" class="qr-preview-box hidden">
+          <label>رمز الاستقبال السريع QR <span class="opt-label">(اختياري)</span></label>
+          <div class="qr-upload-box" id="qrUploadBox">
+            <input type="file" id="walletQrInput" accept="image/*" class="hidden">
+            <div class="qr-placeholder" id="qrPlaceholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span>اضغط لرفع صورة QR الحساب من جهازك</span>
+            </div>
+            <div class="qr-preview-wrap hidden" id="qrPreviewWrap">
               <img id="qrPreviewImg" src="" alt="QR Preview">
-              <button type="button" id="removeQrBtn" class="btn-remove-qr">&times;</button>
+              <button type="button" class="qr-remove-btn" id="qrRemoveBtn">&times;</button>
             </div>
           </div>
         </div>
 
-        <button type="submit" id="walletSubmitBtn" class="btn-primary-block">إنشاء وتشفير المحفظة</button>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="saveWalletBtn">حفظ وإنشاء المحفظة</button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- 4. نافذة عرض تفاصيل المحفظة والـ QR -->
+  <!-- 2. نافذة إضافة عملية مالية -->
+  <div id="txModal" class="modal-backdrop hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3 id="txModalTitle">إضافة عملية جديدة</h3>
+        <button type="button" class="close-modal-btn">&times;</button>
+      </div>
+      <form id="txForm" class="modal-form" novalidate>
+        <input type="hidden" id="txTypeInput" value="expense">
+
+        <div class="form-group" id="groupTxAmount">
+          <label for="txAmountInput">المبلغ *</label>
+          <input type="number" step="any" id="txAmountInput" placeholder="0.00" inputmode="decimal" required>
+          <small class="field-error-msg" id="errTxAmount"></small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txWalletSelect">المحفظة المستهدفة *</label>
+            <select id="txWalletSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label for="txCategorySelect">التصنيف</label>
+            <select id="txCategorySelect">
+              <option value="راتب">راتب / دخل</option>
+              <option value="استثمار">أرباح استثمار</option>
+              <option value="طعام">طعام ومشتريات</option>
+              <option value="فواتير">فواتير وخدمات</option>
+              <option value="مواصلات">مواصلات وتنقل</option>
+              <option value="تسوق">تسوق وملابس</option>
+              <option value="صحة">صحة وأدوية</option>
+              <option value="ترفيه">ترفيه ورحلات</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="txNoteInput">ملاحظة / وصف <span class="opt-label">(اختياري)</span></label>
+          <input type="text" id="txNoteInput" placeholder="اكتب تفاصيل إضافية...">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="saveTxBtn">تسجيل العملية</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. نافذة التحويل بين المحافظ -->
+  <div id="transferModal" class="modal-backdrop hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3>تحويل أموال بين المحافظ</h3>
+        <button type="button" class="close-modal-btn">&times;</button>
+      </div>
+      <form id="transferForm" class="modal-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="transferFromSelect">من محفظة *</label>
+            <select id="transferFromSelect" required></select>
+          </div>
+          <div class="form-group">
+            <label for="transferToSelect">إلى محفظة *</label>
+            <select id="transferToSelect" required></select>
+          </div>
+        </div>
+
+        <div class="form-group" id="groupTransferAmount">
+          <label for="transferAmountInput">المبلغ المراد تحويله *</label>
+          <input type="number" step="any" id="transferAmountInput" placeholder="0.00" inputmode="decimal" required>
+          <small class="field-error-msg" id="errTransferAmount"></small>
+        </div>
+
+        <div class="transfer-info-preview" id="transferRatesPreview">
+          إذا اختلفت العملات يتم تطبيق سعر الصرف التلقائي بدون رسوم.
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" id="saveTransferBtn">تأكيد عملية التحويل</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. نافذة تفاصيل المحفظة والـ QR -->
   <div id="walletDetailsModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="wDetailName">تفاصيل المحفظة</h3>
-        <button class="modal-close-btn" data-close="walletDetailsModal">&times;</button>
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3 id="detailWalletName">تفاصيل المحفظة</h3>
+        <button type="button" class="close-modal-btn">&times;</button>
       </div>
-      <div class="wallet-detail-body">
+      <div class="wallet-detail-content">
         <div class="detail-balance-box">
-          <span class="sub">الرصيد المتوفر</span>
-          <h2 id="wDetailBalance">0.00</h2>
+          <span class="detail-label">الرصيد الفعلي الحالي</span>
+          <h2 class="detail-balance-val" id="detailWalletBalance">0.00 USD</h2>
         </div>
-        <div class="detail-row" id="wDetailAccountRow">
-          <span class="lbl">رقم الحساب:</span>
-          <strong id="wDetailAccount">--</strong>
-        </div>
-        <div class="detail-row">
-          <span class="lbl">العملة:</span>
-          <strong id="wDetailCurrency">--</strong>
-        </div>
-        <div id="wDetailQrBox" class="detail-qr-card hidden">
-          <span class="lbl">رمز QR للاستقبال:</span>
-          <div class="qr-display-container">
-            <img id="wDetailQrImg" src="" alt="QR Code">
+
+        <div class="detail-info-list">
+          <div class="detail-row">
+            <span>نوع الحساب:</span>
+            <strong id="detailWalletType">-</strong>
           </div>
+          <div class="detail-row" id="detailAccountRow">
+            <span>رقم الحساب / IBAN:</span>
+            <div class="copyable-account">
+              <strong id="detailWalletAccount">-</strong>
+              <button type="button" class="copy-btn" id="copyAccountBtn" title="نسخ">نسخ</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-qr-section hidden" id="detailQrSection">
+          <span class="detail-label">رمز QR للاستقبال والتحويل</span>
+          <div class="detail-qr-img-wrap">
+            <img id="detailQrImg" src="" alt="Wallet QR">
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 20px;">
+          <button type="button" class="btn-danger-outline" id="deleteWalletBtn">حذف هذه المحفظة</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 5. نافذة إعداد رمز PIN -->
+  <!-- 5. نافذة إعداد رمز PIN الأمني -->
   <div id="setupPinModal" class="modal-backdrop hidden">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="setupPinTitle">تأمين Money OS برمز PIN</h3>
-        <button class="modal-close-btn" data-close="setupPinModal">&times;</button>
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head">
+        <h3>إعداد رمز حماية PIN</h3>
+        <button type="button" class="close-modal-btn">&times;</button>
       </div>
-      <div class="setup-pin-body">
-        <div class="warning-callout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <p><strong>تنبيه صارم:</strong> الرمز يشفر بياناتك محلياً بخوارزمية AES-256. في حال نسيانه، <strong>لا يمكن استرجاع البيانات أبداً</strong> لعدم وجود خادم خارجي.</p>
+      <form id="setupPinForm" class="modal-form">
+        <div class="sec-warning-alert">
+          <strong>تنبيه أمني:</strong> تفعيل الرمز يشفر قاعدة البيانات بمفتاح AES-256 مشتق من الرمز. احفظ الرمز جيداً.
         </div>
-
-        <form id="setupPinForm" class="modal-form mt-4">
-          <div class="form-group">
-            <label>رمز PIN جديد (4 أرقام)</label>
-            <input type="password" id="newPinInput" maxlength="4" pattern="[0-9]*" inputmode="numeric" required placeholder="••••">
-          </div>
-          <div class="form-group">
-            <label>تأكيد رمز PIN</label>
-            <input type="password" id="confirmPinInput" maxlength="4" pattern="[0-9]*" inputmode="numeric" required placeholder="••••">
-          </div>
-          <button type="submit" class="btn-primary-block">تفعيل التشفير والقفل</button>
-          <button type="button" id="removePinBtn" class="btn-danger-block hidden mt-2">إلغاء رمز الحماية (فك التشفير)</button>
-        </form>
-      </div>
+        <div class="form-group">
+          <label for="newPinInput">رمز PIN الجديد (4 أرقام) *</label>
+          <input type="password" id="newPinInput" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="••••" required style="text-align: center; font-size: 1.4rem; letter-spacing: 12px; direction: ltr;">
+        </div>
+        <div class="form-group">
+          <label for="confirmPinInput">تأكيد رمز PIN *</label>
+          <input type="password" id="confirmPinInput" maxlength="4" pattern="[0-9]*" inputmode="numeric" placeholder="••••" required style="text-align: center; font-size: 1.4rem; letter-spacing: 12px; direction: ltr;">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">حفظ وتشفير الخزينة</button>
+          <button type="button" class="btn-danger-outline" id="removePinBtn">إلغاء حماية الرمز</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <div id="toastNotification" class="toast hidden"></div>
+  <!-- حاوية إشعارات Toast -->
+  <div id="toastContainer" class="toast-container"></div>
 
-  <!-- السكربتات -->
+  <!-- استدعاء ملفات جافاسكريبت بالترتيب الصارم -->
   <script src="js/core/crypto.js"></script>
-  <script src="js/core/security.js"></script>
   <script src="js/core/db.js"></script>
+  <script src="js/core/security.js"></script>
   <script src="js/modules/rates.js"></script>
   <script src="js/modules/wallets.js"></script>
   <script src="js/modules/transactions.js"></script>

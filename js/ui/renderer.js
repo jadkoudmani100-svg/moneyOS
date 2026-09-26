@@ -1,162 +1,441 @@
 /**
- * Money OS - واجهة العرض والتنسيق وإخفاء الرصيد السلس
+ * Money OS - واجهة العرض، محرك الأصوات التوليدي ومحرك الأمواج المتحركة
  */
+
+// ==================== محرك الأصوات الفاخر (SoundFX Engine) ====================
+const SoundFX = (() => {
+  let audioCtx = null;
+  let enabled = true;
+
+  function initAudio() {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        audioCtx = new AudioContext();
+      }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  function setEnabled(val) {
+    enabled = !!val;
+  }
+
+  function isEnabled() {
+    return enabled;
+  }
+
+  // 1. صوت نقر الأزرار الخفيف والممتع (Keypad Click)
+  function playClick() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.04);
+
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.045);
+    } catch (e) {}
+  }
+
+  // 2. صوت فتح القفل الناجح (Harmonic Success Chime)
+  function playSuccess() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.07);
+
+        gain.gain.setValueAtTime(0, audioCtx.currentTime + idx * 0.07);
+        gain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + idx * 0.07 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.07 + 0.28);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(audioCtx.currentTime + idx * 0.07);
+        osc.stop(audioCtx.currentTime + idx * 0.07 + 0.3);
+      });
+    } catch (e) {}
+  }
+
+  // 3. صوت الخطأ للرمز PIN (Error Thud)
+  function playError() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.22);
+
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.24);
+    } catch (e) {}
+  }
+
+  // 4. صوت الإيداع وإضافة المال (Cash In Chime)
+  function playDeposit() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const chord = [587.33, 880, 1174.66]; // D5, A5, D6
+      chord.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.05));
+
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime + (i * 0.05));
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.05) + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(audioCtx.currentTime + (i * 0.05));
+        osc.stop(audioCtx.currentTime + (i * 0.05) + 0.38);
+      });
+    } catch (e) {}
+  }
+
+  // 5. صوت المصروف أو التحويل (Smooth Swoosh)
+  function playExpense() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.16);
+
+      gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
+    } catch (e) {}
+  }
+
+  // 6. صوت التنقل الخفيف بين التبويبات (Tab Blip)
+  function playTab() {
+    if (!enabled) return;
+    initAudio();
+    if (!audioCtx) return;
+
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.055);
+    } catch (e) {}
+  }
+
+  return {
+    initAudio,
+    setEnabled,
+    isEnabled,
+    playClick,
+    playSuccess,
+    playError,
+    playDeposit,
+    playExpense,
+    playTab
+  };
+})();
+
+// ==================== محرك خطوط وأمواج الخلفية المتحركة ====================
+const AmbientLines = (() => {
+  let canvas, ctx;
+  let animId = null;
+  let running = false;
+  let step = 0;
+
+  function init() {
+    canvas = document.getElementById('ambientLinesCanvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    resize();
+    window.addEventListener('resize', resize);
+    start();
+  }
+
+  function resize() {
+    if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    render();
+  }
+
+  function stop() {
+    running = false;
+    if (animId) cancelAnimationFrame(animId);
+  }
+
+  function render() {
+    if (!running || !ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    step += 0.006;
+
+    // رسم 4 أمواج ضوئية منحنية فائقة النعومة
+    drawWave(h * 0.28, 45, 0.0018, step, 'rgba(37, 99, 235, 0.16)', 'rgba(59, 130, 246, 0.04)');
+    drawWave(h * 0.52, 60, 0.0012, step * 1.2 + 2, 'rgba(139, 92, 246, 0.14)', 'rgba(168, 85, 247, 0.03)');
+    drawWave(h * 0.74, 50, 0.0015, step * 0.8 + 4, 'rgba(14, 165, 233, 0.12)', 'rgba(37, 99, 235, 0.02)');
+    drawWave(h * 0.88, 35, 0.002, step * 1.4 + 1, 'rgba(16, 185, 129, 0.10)', 'rgba(16, 185, 129, 0.02)');
+
+    animId = requestAnimationFrame(render);
+  }
+
+  function drawWave(baseY, amplitude, freq, offset, strokeColor, fillColor) {
+    const w = canvas.width;
+    ctx.beginPath();
+    ctx.moveTo(0, baseY);
+
+    for (let x = 0; x <= w; x += 15) {
+      const y = baseY + Math.sin(x * freq + offset) * amplitude + Math.cos(x * freq * 0.5 + offset * 0.7) * (amplitude * 0.4);
+      ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // ملء ضبابي أسفل المنحنى
+    ctx.lineTo(w, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.closePath();
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+  }
+
+  return {
+    init,
+    start,
+    stop
+  };
+})();
+
+// ==================== مصير وعارض الواجهة (UIRenderer) ====================
 const UIRenderer = (() => {
   let isPrivacy = false;
 
-  function setPrivacyMode(val) {
-    isPrivacy = !!val;
+  function togglePrivacy() {
+    isPrivacy = !isPrivacy;
+    return isPrivacy;
   }
 
-  function getPrivacyMode() {
+  function getPrivacy() {
     return isPrivacy;
   }
 
   function formatMoney(amount, currency = 'USD') {
     if (isPrivacy) return '••••';
     const num = Number(amount) || 0;
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(num);
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  function blankAllData() {
-    const netEl = document.getElementById('netWorthValue');
-    const incEl = document.getElementById('totalIncomeValue');
-    const expEl = document.getElementById('totalExpenseValue');
-    if (netEl) netEl.textContent = '••••';
-    if (incEl) incEl.textContent = '••••';
-    if (expEl) expEl.textContent = '••••';
+  function renderOverview(wallets, transactions) {
+    const totalWealthEl = document.getElementById('totalWealthDisplay');
+    const incomeEl = document.getElementById('monthlyIncomeDisplay');
+    const expenseEl = document.getElementById('monthlyExpenseDisplay');
 
-    const homeWallets = document.getElementById('homeWalletsScroll');
-    const allWallets = document.getElementById('allWalletsGrid');
-    const homeTx = document.getElementById('homeRecentTxList');
-    const fullTx = document.getElementById('fullTxList');
+    let totalInUsd = 0;
+    wallets.forEach(w => {
+      totalInUsd += Rates.convert(w.balance, w.currency, 'USD');
+    });
 
-    if (homeWallets) homeWallets.innerHTML = '';
-    if (allWallets) allWallets.innerHTML = '';
-    if (homeTx) homeTx.innerHTML = '';
-    if (fullTx) fullTx.innerHTML = '';
+    let totalInc = 0;
+    let totalExp = 0;
+    transactions.forEach(t => {
+      const amtInUsd = Rates.convert(t.amount, t.currency || 'USD', 'USD');
+      if (t.type === 'income') totalInc += amtInUsd;
+      else if (t.type === 'expense') totalExp += amtInUsd;
+    });
+
+    if (totalWealthEl) totalWealthEl.textContent = formatMoney(totalInUsd);
+    if (incomeEl) incomeEl.textContent = formatMoney(totalInc);
+    if (expenseEl) expenseEl.textContent = formatMoney(totalExp);
+
+    renderQuickWallets(wallets);
   }
 
-  function renderNetWorth(total, income, expense) {
-    const netEl = document.getElementById('netWorthValue');
-    const incEl = document.getElementById('totalIncomeValue');
-    const expEl = document.getElementById('totalExpenseValue');
+  function renderQuickWallets(wallets) {
+    const list = document.getElementById('quickWalletsList');
+    if (!list) return;
 
-    if (netEl) netEl.textContent = formatMoney(total, 'USD');
-    if (incEl) incEl.textContent = isPrivacy ? '••••' : `$${formatMoney(income, 'USD')}`;
-    if (expEl) expEl.textContent = isPrivacy ? '••••' : `$${formatMoney(expense, 'USD')}`;
-  }
-
-  function renderWallets(wallets = []) {
-    const homeTrack = document.getElementById('homeWalletsScroll');
-    const grid = document.getElementById('allWalletsGrid');
-
-    if (!wallets || wallets.length === 0) {
-      const emptyHtml = `
-        <div class="empty-state" style="width: 100%;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-          <p>لا توجد محافظ بعد. اضغط "+ محفظة جديدة" للبدء.</p>
-        </div>
-      `;
-      if (homeTrack) homeTrack.innerHTML = emptyHtml;
-      if (grid) grid.innerHTML = emptyHtml;
+    if (wallets.length === 0) {
+      list.innerHTML = `<div style="color:var(--text-dim);font-size:0.84rem;padding:8px 0;">لا توجد محافظ نشطة بعد. اضغط "+ محفظة" للبدء.</div>`;
       return;
     }
 
-    const typeLabels = {
-      bank: 'بنكي',
-      cash: 'كاش',
-      crypto: 'كريبتو',
-      savings: 'ادخار'
-    };
-
-    const cardsHtml = wallets.map(w => `
-      <div class="wallet-chip-card" data-wid="${w.id}">
-        <div class="wallet-header-mini">
-          <span class="w-title">${escapeHtml(w.name)}</span>
-          <span class="w-type-badge">${typeLabels[w.type] || 'عام'}</span>
+    list.innerHTML = wallets.map(w => `
+      <div class="mini-wallet-card" onclick="openWalletDetail('${w.id}')">
+        <div class="mini-wallet-top">
+          <span class="mini-wallet-type">${w.type || 'حساب'}</span>
+          <span class="mini-wallet-curr">${w.currency}</span>
         </div>
-        <span class="w-val">${formatMoney(w.balance, w.currency)}</span>
-        <span class="w-cur">${w.currency} ${w.qrCode ? '• [QR]' : ''}</span>
+        <div class="mini-wallet-name">${w.name}</div>
+        <div class="mini-wallet-balance">${formatMoney(w.balance)} <small style="font-size:0.75rem">${w.currency}</small></div>
       </div>
     `).join('');
-
-    if (homeTrack) homeTrack.innerHTML = cardsHtml;
-    if (grid) grid.innerHTML = cardsHtml;
   }
 
-  function renderTransactions(transactions = [], containerId = 'homeRecentTxList') {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+  function renderWallets(wallets) {
+    const grid = document.getElementById('fullWalletsGrid');
+    if (!grid) return;
 
-    if (!transactions || transactions.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          <p>لا توجد عمليات مسجلة بعد.</p>
-        </div>
-      `;
+    if (wallets.length === 0) {
+      grid.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:30px 0;">لم يتم إنشاء أي محفظة حتى الآن.</div>`;
       return;
     }
 
-    container.innerHTML = transactions.map(t => {
-      const isInc = t.type === 'income';
-      const isExp = t.type === 'expense';
-      const sign = isInc ? '+' : isExp ? '-' : '⇄';
-      const dateStr = t.date ? new Date(t.date).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' }) : '';
-
-      return `
-        <div class="tx-row ${t.type}">
-          <div class="tx-lead">
-            <div class="tx-badge-icon">
-              ${isInc ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline></svg>' : 
-                isExp ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline></svg>' : 
-                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"></polyline><polyline points="7 23 3 19 7 15"></polyline></svg>'}
-            </div>
-            <div class="tx-details">
-              <span class="tx-category">${escapeHtml(t.category || (t.type === 'transfer' ? 'تحويل' : 'عملية'))}</span>
-              <span class="tx-meta">${escapeHtml(t.note || '')} ${dateStr ? '• ' + dateStr : ''}</span>
+    grid.innerHTML = wallets.map(w => `
+      <div class="wallet-full-card" onclick="openWalletDetail('${w.id}')">
+        <div class="wallet-full-head">
+          <div class="wallet-full-title">
+            <div class="wallet-avatar-icon">${(w.name || 'W').charAt(0)}</div>
+            <div>
+              <div class="wallet-full-name">${w.name}</div>
+              <div class="wallet-full-account">${w.accountNumber || w.type}</div>
             </div>
           </div>
-          <div class="tx-amount-box">
-            <span class="tx-val">${sign} ${formatMoney(t.amount, t.currency)}</span>
-            <span class="tx-meta">${t.currency || ''}</span>
+          <span class="currency-tag">${w.currency}</span>
+        </div>
+        <div class="wallet-full-balance">${formatMoney(w.balance)} ${w.currency}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderTransactions(transactions) {
+    const list = document.getElementById('homeTxList');
+    const badge = document.getElementById('txCountBadge');
+    if (badge) badge.textContent = transactions.length;
+    if (!list) return;
+
+    if (transactions.length === 0) {
+      list.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:30px 0;">لا توجد عمليات مسجلة بعد.</div>`;
+      return;
+    }
+
+    list.innerHTML = transactions.map(t => {
+      const isInc = t.type === 'income';
+      const sign = isInc ? '+' : '-';
+      const dateStr = t.date ? new Date(t.date).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+      return `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon-wrap ${isInc ? 'income' : 'expense'}">
+              ${isInc ? '↓' : '↑'}
+            </div>
+            <div class="tx-details">
+              <span class="tx-title">${t.note || t.category || 'معاملة'}</span>
+              <span class="tx-meta">${t.category} • ${dateStr}</span>
+            </div>
+          </div>
+          <div class="tx-amount ${isInc ? 'income' : 'expense'}">
+            ${sign}${formatMoney(t.amount)} ${t.currency || ''}
           </div>
         </div>
       `;
     }).join('');
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  function clearAllSensitiveDisplays() {
+    const ids = ['totalWealthDisplay', 'monthlyIncomeDisplay', 'monthlyExpenseDisplay'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '••••';
+    });
+    const q = document.getElementById('quickWalletsList');
+    if (q) q.innerHTML = '';
+    const h = document.getElementById('homeTxList');
+    if (h) h.innerHTML = '';
+    const g = document.getElementById('fullWalletsGrid');
+    if (g) g.innerHTML = '';
   }
 
   function showToast(msg) {
-    const el = document.getElementById('toastNotification');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.remove('hidden');
+    const c = document.getElementById('toastContainer');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = 'toast-item';
+    t.textContent = msg;
+    c.appendChild(t);
     setTimeout(() => {
-      el.classList.add('hidden');
-    }, 2800);
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(-10px)';
+      t.style.transition = 'all 0.3s ease';
+      setTimeout(() => t.remove(), 300);
+    }, 2200);
   }
 
   return {
-    setPrivacyMode,
-    getPrivacyMode,
+    togglePrivacy,
+    getPrivacy,
     formatMoney,
-    blankAllData,
-    renderNetWorth,
+    renderOverview,
     renderWallets,
     renderTransactions,
+    clearAllSensitiveDisplays,
     showToast
   };
 })();
